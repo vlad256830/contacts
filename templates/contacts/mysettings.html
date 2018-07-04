@@ -1,10 +1,16 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% load staticfiles %}
+{% block content %}
 
 <div class="row">
     <div class="container">
 
-        <div class='col-sm-6 col-sm-offset-3'>
+        <div class='col-sm-6 col-sm-offset-3 text-center'>
             <h1>User Settings</h1>
+            <p>
+                <h3>User name: {{ username }}   </h3>
+                <a class="btn btn-primary" data-toggle="modal" href="#pass-id">Change password</a>
+            </p>
         </div>
     </div>
 </div>
@@ -16,7 +22,7 @@
                 <div class="modal fade" id="pass-id" role="dialog">
                     <div class="modal-dialog">
 
-                        <form method="post" id="form-modal" action="#">
+                        <form method="post" id="form-changepassword" action="#">
                             {% csrf_token %}
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -25,6 +31,10 @@
 
                                 </div>
                                 <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="id_oldpassword">Old password</label>
+                                        <input type="password" class="form-control" name="oldpassword1" required id="oldpassword" />
+                                    </div>
                                    
                                     <div class="form-group">
                                         <label for="id_password1">Password</label>
@@ -52,27 +62,31 @@
 
         <div class="row">
             <div class="container">
-                <div class="col-sm-2 form-group">
-                    <a class="btn btn-primary" data-toggle="modal" href="#pass-id">Change password</a>
+                <div class="col-sm-2">
+                    <a class="btn btn-primary" data-toggle="modal" href="#">Add Getvero account</a>
                 </div>
-                <div class="col-sm-8 form-group">
-                <form method="post" action="#">
-                    {% csrf_token %}
-                    <div class="form-group"> 
-                        <label for="id_username">Username</label> 
-                        <input type="text" class="form-control" name="username" value="{{ username }}" required autofocus id="id_username" /> 
-                    </div> 
-                    
-                    <div class="form-group"> 
-                        <label for="api_key">Getvero key</label>         
-                        <input type="text" class="form-control" name="api_key" value="{{ data.Getvero_key }}" id="api_key"/> 
-                    </div> 
-                    
-                     
-                    <div class="form-group">
-                        <input type="submit" class="btn btn-primary" value="Save" />
-                    </div> 
-                </form>
+                <div class="col-sm-8">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Username</th>
+                                <th class="text-center">API key</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        {% for line in data %}
+                        <tbody>
+                            <tr>
+                                <td class="text-center">{{ line.getvero_username }}</td>
+                                <td class="text-center">{{ line.getvero_key }}</td>
+                                <td class="text-center">
+                                    <a href="#" class="btn btn-sm btn-info">Edit</a>
+                                    <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                        {% endfor %}
+                    </table>
                 </div>
             </div>
         </div>
@@ -82,4 +96,8 @@
 
 
 
+{% endblock %}
+
+{% block javascript %}
+  <script src="{% static 'js/mysettings.js' %}"></script>
 {% endblock %}

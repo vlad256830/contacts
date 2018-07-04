@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block style %}
+<link href="{% static 'css/exportvero.css' %}" rel="stylesheet">
+{% endblock %} 
+
+{% block content %}
+
+<div id="progress-wrapper">
+  <button id="progress-bar-trigger">Run</button>
+  <div id="progress-bar" >&nbsp;</div>
+  <div id="progress-bar-message">Waiting for progress to start...</div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script src="{% static 'js/exportvero.js' %}"></script>
+{% endblock %}
+

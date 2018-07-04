@@ -31,6 +31,8 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Passwords don't match")
         return password2
 
+
+
 class ContactForm(forms.ModelForm):
     first_name = forms.CharField(max_length=45)
     second_name = forms.CharField(max_length=45)

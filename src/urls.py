@@ -21,5 +21,6 @@ from django.views.generic.base import TemplateView
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('contacts.urls', namespace='contacts')),
+    url(r'^celery-progress/', include('celery_progress.urls')),
     
 ]

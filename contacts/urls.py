@@ -13,5 +13,9 @@ urlpatterns = [
     url(r'^delete/$', contact_delete, name='delete'),
     url(r'^contacts/addcontact/$', addcontact, name='addcontact'),
     url(r'^mysettings/$', mysettings, name='mysettings'),
+    url(r'^mysettings/changepassword/$', changepassword, name='changepassword'),
+    url(r'^exportcsv/$', exportcsv, name='exportcsv'),
+    url(r'^exportvero/$', exportvero, name='exportvero'),
+   
 
 ]

@@ -1,11 +1,18 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth import get_user_model, authenticate, login, logout, update_session_auth_hash
 from django.db import models, connection, transaction
+from django.contrib.auth.forms import PasswordChangeForm
 from django.http import JsonResponse
 from django.core import serializers
+from django.http import HttpResponse,HttpResponseForbidden
 import datetime
-from .forms import *
+import os
+import csv
+import io
 from .models import Usersettings
+from .forms import RegisterForm,ContactForm
+from .tasks import my_task
+
 
 User = get_user_model()
 
@@ -195,11 +202,62 @@ def mysettings(request):
         username = request.user.username
         user_id = request.user.id
         print(user_id)
-        data = Usersettings.objects.get(user_id=user_id)
+        data = Usersettings.objects.filter(user_id=user_id)
         #for item in data:[:1].get()
-        print(data.Getvero_key)
+
         context = {
             'username': username,
             'data' : data,            
         }
         return render(request,"contacts/mysettings.html",context)
+
+def changepassword(request):
+    username = None
+    error = []
+    if request.user.is_authenticated():
+        username = request.user.username
+        if request.method == 'POST':
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+            else:
+                error.append('password invalid')
+    else:
+        error.append('user not authenticated')
+    context = {
+                "error": error,                
+            }
+    return JsonResponse(context)
+
+def exportcsv(request, **kwargs):
+    username = None
+    if request.user.is_authenticated():
+        username = request.user.username   
+        tname = username+"_contacts"
+        #task = generate_file.delay(tname)
+        #return render(request,"contacts/exportvero.html",{"task_id": task.task_id })
+        filename = tname+".csv"
+        cursor = connection.cursor()
+        cursor.execute("SELECT `id`,`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,"\
+        "`date_of_birth`,`created_at` FROM `"+tname+"`")
+        rows = cursor.fetchall()
+        columns = ['id','first_name','second_name','town','country','telephone','email','date_of_birth','created_at']
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename='+filename
+
+        writer = csv.writer(response)
+        writer.writerow(columns)
+        for i in rows:
+            writer.writerow([i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8],])
+        return response
+
+def exportvero(request):
+    username = None
+    if request.user.is_authenticated():
+        username = request.user.username   
+        tname = username+"_contacts"
+        result = my_task.delay(10)
+        print(result)
+        return render(request, 'contacts/exportvero.html', context={'task_id': result.task_id})
