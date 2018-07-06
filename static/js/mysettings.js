@@ -1,4 +1,10 @@
 $(function(){
+    $(".del").click(function(){
+        if (!confirm("Do you want to delete")){
+          return false;
+        }
+    });
+
     frm = $('#form-changepassword');
     frm.submit(function(e) {
         e.preventDefault();
@@ -29,7 +35,11 @@ $(function(){
             data: frm.serialize(),            
             
             success: function(response) { 
-           
+                var tkey = $('#id_getvero_key').val();
+                var tuser = $('#id_getvero_username').val();
+                $('.tkey').html(tkey);
+                $('.tuser').html(tuser);
+
                 $("#bntcloseVero").click();            
             },
             error: function(xhr, errmsg, err) {

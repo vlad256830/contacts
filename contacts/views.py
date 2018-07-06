@@ -13,7 +13,7 @@ import csv
 import io
 from .models import Usersettings
 from .forms import RegisterForm,ContactForm,UsersettingsForm
-from .tasks import my_task
+from .tasks import create_user_table,export_to_getvero
 
 
 User = get_user_model()
@@ -42,20 +42,21 @@ def register(request):
             user = User.objects.create_user(username,email,password)
             user.save()  
              #create user table contacts
-            sql = "CREATE TABLE `"+username+"_contacts` ("\
-            "`id` int(11) NOT NULL AUTO_INCREMENT,"\
-            "`first_name` varchar(45) NOT NULL,"\
-            "`second_name` varchar(45) NOT NULL,"\
-            "`town` varchar(45) DEFAULT NULL,"\
-            "`country` varchar(45) DEFAULT NULL,"\
-            "`telephone` varchar(20) NOT NULL,"\
-            "`email` varchar(45) NOT NULL,"\
-            "`date_of_birth` date DEFAULT NULL,"\
-            "`created_at` date NOT NULL,"\
-            "PRIMARY KEY (`id`)"\
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-            cursor = connection.cursor()
-            cursor.execute(sql) 
+            result = create_user_table.delay(username)
+            # sql = "CREATE TABLE `"+username+"_contacts` ("\
+            # "`id` int(11) NOT NULL AUTO_INCREMENT,"\
+            # "`first_name` varchar(45) NOT NULL,"\
+            # "`second_name` varchar(45) NOT NULL,"\
+            # "`town` varchar(45) DEFAULT NULL,"\
+            # "`country` varchar(45) DEFAULT NULL,"\
+            # "`telephone` varchar(20) NOT NULL,"\
+            # "`email` varchar(45) NOT NULL,"\
+            # "`date_of_birth` date DEFAULT NULL,"\
+            # "`created_at` date NOT NULL,"\
+            # "PRIMARY KEY (`id`)"\
+            # ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+            # cursor = connection.cursor()
+            # cursor.execute(sql) 
             context = {
                 'result' : True,
             }
@@ -270,9 +271,36 @@ def edit_getvero_key(request):
             else:
                 error.append("error form")    
             context = {
-                    "error": error,                
+                    "error": error, 
+             
                     }
             return JsonResponse(context)
+
+def del_user_account(request):
+    if request.user.is_authenticated():
+        username = request.user.username
+        user_id = request.user.id
+        try:
+            #delete Usersettings
+            Usersettings.objects.filter(user_id=user_id).delete()
+            #delete user table
+            tname = username+"_contacts"
+            sql = "DROP table `" + tname + "`"                
+            cursor = connection.cursor()
+            cursor.execute(sql) 
+            #delete user account
+            u = User.objects.get(username = username)
+            u.delete()
+            messages.success(request, "The user is deleted")            
+
+        except User.DoesNotExist:
+            messages.error(request, "User doesnot exist")    
+
+        logout(request)
+    
+        return render(request,"contacts/logout.html",{})
+    else:
+        return render(request,"403.html",{})
 
 
 def exportcsv(request, **kwargs):
@@ -305,7 +333,7 @@ def exportvero(request):
     if request.user.is_authenticated():
         username = request.user.username   
         user_id = request.user.id
-        result = my_task.delay(username,user_id)
+        result = export_to_getvero.delay(username,user_id)
         print(result)
         messages.success(request, 'Your information sent to the server http://getvero.com/.')
         return redirect("contacts:contacts")

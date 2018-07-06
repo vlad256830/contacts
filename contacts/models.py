@@ -35,6 +35,8 @@ class Usersettings(models.Model):
         return '%s %s %s' % (self.user, self.getvero_username, self.getvero_key)
 
     
+
+    
     
         
 

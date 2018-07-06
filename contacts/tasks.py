@@ -10,11 +10,11 @@ from .models import Usersettings
 
 
 @shared_task
-def my_task(username,user_id):
+def export_to_getvero(username,user_id):
     tname = username+"_contacts"
     #user_id = User.objects.get(username=the_username).pk
-    data = Usersettings.objects.filter(user_id=user_id)[:1].get()
-    #getvero_username = data.getvero_username
+    data = Usersettings.objects.get(user_id=user_id)
+    #getvero_username = data.getvero_username[:1].get()
     getvero_key = data.getvero_key
     #getvero connect
     logger = VeroEventLogger(getvero_key)
@@ -36,6 +36,25 @@ def my_task(username,user_id):
         }
         logger.add_user(id, user_data, user_email=user_email)        
     return 'done'
+
+@shared_task
+def create_user_table(username):
+    sql = "CREATE TABLE `"+username+"_contacts` ("\
+            "`id` int(11) NOT NULL AUTO_INCREMENT,"\
+            "`first_name` varchar(45) NOT NULL,"\
+            "`second_name` varchar(45) NOT NULL,"\
+            "`town` varchar(45) DEFAULT NULL,"\
+            "`country` varchar(45) DEFAULT NULL,"\
+            "`telephone` varchar(20) NOT NULL,"\
+            "`email` varchar(45) NOT NULL,"\
+            "`date_of_birth` date DEFAULT NULL,"\
+            "`created_at` date NOT NULL,"\
+            "PRIMARY KEY (`id`)"\
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    cursor = connection.cursor()
+    cursor.execute(sql) 
+    return 'table create'
+    
 
 
 

@@ -6,6 +6,16 @@
   <div class="container">
     <h1 class="text-center">Thank you for visiting the site.</h1>
   </div>
+  {% if messages %}
+  <div class="container">
+    <div class="alert alert-danger">
+      <strong>Success!</strong>
+      {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
+    </div>    
+  </div>
+  {% endif %}
 </div>
 
     

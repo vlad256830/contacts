@@ -1,4 +1,4 @@
 # contacts
 test application Contacts
 readme
-celery -A contacts worker -l info
+celery -A src worker -l info
