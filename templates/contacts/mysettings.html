@@ -90,7 +90,7 @@
 <div class="row">
     <div class="container">
         <div class="col-sm-2">
-            <a class="btn btn-primary" data-toggle="modal" href="#">Add Getvero account</a>
+            <a href="{% url 'contacts:del_user_account' %}" class="btn btn-sm btn-danger del">Delete Account</a>
         </div>
         <div class="col-sm-8">
             <table class="table table-bordered table-sm">
@@ -108,7 +108,7 @@
                         <td class="text-center tkey">{{ data.getvero_key }}</td>
                         <td class="text-center">
                             <a href="#vero-id" data-toggle="modal" class="btn btn-sm btn-info">Add/Edit</a>
-                            <a href="{% url 'contacts:del_user_account' %}" class="btn btn-sm btn-danger del">Delete Account</a>
+                            
                         </td>
                     </tr>
                 </tbody>

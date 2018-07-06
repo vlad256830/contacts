@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django_adminlte',
     'django_adminlte_theme',
     'celery_progress',
+    'django_celery_results',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -138,5 +139,9 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR,  "static"),
 )
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND = 'django-cache'

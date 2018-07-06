@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.core import serializers
 from django.http import HttpResponse,HttpResponseForbidden
 from django.template import RequestContext
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 import datetime
 import os
 import csv
@@ -202,7 +204,76 @@ def addcontact(request):
                 }
             
                 return JsonResponse(context)
-    
+
+def insert_csv_to_table(username,filename):
+    tname = username+"_contacts"
+    fname = '/home/a/www2/'+FileSystemStorage().url(filename)
+    created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+
+    try:
+        with open(fname, "r", encoding="utf8") as f:
+            content = f.readlines()        
+            #content = content.strip()
+            x = 0
+            base_sql = "(`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
+            values_sql = ''
+            sql = ''
+
+            for line in content:         
+                if not line.startswith("first"):
+                    line = line.replace("\n","").replace("\r","")
+                    s = line.split("\t")
+                    if values_sql:
+                        values_sql += ",('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+                    else:
+                        values_sql += "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+
+                    x = x+1
+                    if x == 1000:
+                        sql = base_sql+values_sql
+                        #print(sql)
+                        cursor = connection.cursor()
+                        cursor.execute(sql)
+                        x = 0
+                        values_sql = ''
+
+            sql = base_sql+values_sql
+            #print(sql)
+            cursor = connection.cursor()
+            cursor.execute(sql)
+        return True
+    except: 
+        return False
+
+def importcsv(request):
+    context = {}
+    username = None
+    if request.user.is_authenticated():
+        username = request.user.username
+        if request.method == 'POST' and request.FILES['mycsvfile']:
+            mycsvfile = request.FILES['mycsvfile']
+            if not mycsvfile.name.endswith('.csv'):
+                context = {
+                'uploaded_file_url': 'error, file not csv',
+                }
+                #return
+            fs = FileSystemStorage()
+            filename = fs.save(mycsvfile.name, mycsvfile)
+            uploaded_file_url = fs.url(filename)
+            context = {
+                'uploaded_file_url': uploaded_file_url,
+            }  
+            if not insert_csv_to_table(username,filename):
+                context = {
+                'uploaded_file_url': 'error, file not txt',
+                }
+                #return      
+
+
+            print(settings.MEDIA_ROOT)
+            print(os.path)
+            os.remove('/home/a/www2/'+FileSystemStorage().url(filename))
+        return redirect('contacts:contacts')
 
 def mysettings(request):
     username = None
