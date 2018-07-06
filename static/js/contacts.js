@@ -71,25 +71,7 @@ $(document).ready(function() {
                 "data": null,
                 "defaultContent": "<button class='btn btn-sm btn-danger del'>Delete</button>"
             }
-        ],
-        "columnFilters": [
-            [
-              { "created_at": "" },
-              
-            ],
-            
-          ],
-        
-        "rowCallback": function( row, data, index ) {            
-                
-                //var str = data["date_of_birth"].toString();
-                //console.log(str)
-
-
-                //$('td:eq(8)', row).text(str.substring(8,10)+"."+str.substring(5, 7)+"."+str.substring(0,4););
-                            
-            },
-        
+        ],                
         "initComplete": function(){
             this.api().columns([3,4]).every( function () {
                 var column = this;
@@ -99,11 +81,7 @@ $(document).ready(function() {
                         var val = $(this).val();
                         column.search( this.value ).draw();
                     } );
-     
-                // Only contains the *visible* options from the first page
-                //console.log(column.data().unique());
-     
-                // If I add extra data in my JSON, how do I access it here besides column.data?
+
                 column.data().unique().sort().each( function ( d, j ) {
                     select.append( '<option value="'+d+'">'+d+'</option>' )
                 } );
@@ -167,7 +145,6 @@ $(document).ready(function() {
                 alert(xhr.response.Text);
             }
         });
-        //window.close();
         return false;
     });
 

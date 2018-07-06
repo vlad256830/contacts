@@ -24,7 +24,7 @@ class Contact(models.Model):
         return '%s %s' % (self.first_name, self.second_name)
 
 class Usersettings(models.Model):
-    user = models.ForeignKey(User)   
+    user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True,)  
     getvero_key = models.CharField(max_length=255)
     getvero_username = models.CharField(max_length=45)
 

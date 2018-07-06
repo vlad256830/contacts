@@ -2,15 +2,17 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model, authenticate, login, logout, update_session_auth_hash
 from django.db import models, connection, transaction
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
 from django.http import JsonResponse
 from django.core import serializers
 from django.http import HttpResponse,HttpResponseForbidden
+from django.template import RequestContext
 import datetime
 import os
 import csv
 import io
 from .models import Usersettings
-from .forms import RegisterForm,ContactForm
+from .forms import RegisterForm,ContactForm,UsersettingsForm
 from .tasks import my_task
 
 
@@ -18,6 +20,7 @@ User = get_user_model()
 
 
 # Create your views here.
+
 def index(request):
     context = {
         'form' : RegisterForm,
@@ -114,38 +117,41 @@ def mycontacts(request):
     username = None
     if request.user.is_authenticated():
         username = request.user.username
-    if request.method == 'GET':
-        tname = username+"_contacts"
-        cursor = connection.cursor()
-        cursor.execute("SELECT `id`,`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,"\
-        "`date_of_birth`,`created_at` FROM `"+tname+"`")
-        rows = cursor.fetchall()
+        if request.method == 'GET':
+            tname = username+"_contacts"
+            cursor = connection.cursor()
+            cursor.execute("SELECT `id`,`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,"\
+            "`date_of_birth`,`created_at` FROM `"+tname+"`")
+            rows = cursor.fetchall()
 
-        columns = ['id','first_name','second_name','town','country','telephone','email','date_of_birth','created_at']
-        obj = []
-        #total_count = len(rows)
-        for st in rows:
-            ret= {}
-            i = 0
-            for col in columns:                
-                ret[col] = st[i] 
-                i += 1           
-            obj.append(ret)
+            columns = ['id','first_name','second_name','town','country','telephone','email','date_of_birth','created_at']
+            obj = []
+            #total_count = len(rows)
+            for st in rows:
+                ret= {}
+                i = 0
+                for col in columns:                
+                    ret[col] = st[i] 
+                    i += 1           
+                obj.append(ret)
 
-        context = {
-            #"draw": 1,
-            #"recordsTotal": 1,
-            #"recordsFiltered": 1,
-            "data": obj
-            }
-        #print(context)
-        return JsonResponse(context)
-        #return render(request, 'contacts/contacts.html', context)
+            context = {
+                #"draw": 1,
+                #"recordsTotal": 1,
+                #"recordsFiltered": 1,
+                "data": obj
+                }
+            #print(context)
+            return JsonResponse(context)
+    
+        
 
 def contacts(request):
-   if request.user.is_authenticated():
+    if request.user.is_authenticated():
         context = {}
         return render(request,"contacts/contacts.html",context)
+    else:
+        return render(request,"403.html",{})
 
 def contact_delete(request):
      if request.method == 'POST':
@@ -163,6 +169,7 @@ def contact_delete(request):
                 "res": True,
             }
             return JsonResponse(context)
+        
 
 
 def addcontact(request): 
@@ -194,15 +201,18 @@ def addcontact(request):
                 }
             
                 return JsonResponse(context)
-        #else:
+    
 
 def mysettings(request):
     username = None
     if request.user.is_authenticated():
         username = request.user.username
         user_id = request.user.id
-        print(user_id)
-        data = Usersettings.objects.filter(user_id=user_id)
+        #print(user_id)
+        try:
+            data = Usersettings.objects.get(user_id=user_id)
+        except Usersettings.DoesNotExist:
+            data = {}
         #for item in data:[:1].get()
 
         context = {
@@ -210,6 +220,8 @@ def mysettings(request):
             'data' : data,            
         }
         return render(request,"contacts/mysettings.html",context)
+    else:
+        return render(request,"403.html",{})
 
 def changepassword(request):
     username = None
@@ -223,12 +235,45 @@ def changepassword(request):
                 update_session_auth_hash(request, user)
             else:
                 error.append('password invalid')
-    else:
-        error.append('user not authenticated')
-    context = {
+    
+            context = {
                 "error": error,                
-            }
-    return JsonResponse(context)
+                }
+            return JsonResponse(context)
+
+def edit_getvero_key(request):
+    username = None
+    error = []
+
+    if request.user.is_authenticated():
+        username = request.user.username
+        user_id = request.user.id
+
+        if request.method == 'POST':
+            form = UsersettingsForm(request.POST)
+            if form.is_valid:
+                uname = request.POST['getvero_username']
+                #uname = form.cleaned_data['getvero_username']
+                gkey = request.POST['getvero_key']
+                
+                #data = Usersettings.objects.update_or_create(user_id=user_id,getvero_username=getvero_username,getvero_key=getvero_key)
+                try:
+                    data = Usersettings.objects.get(user_id=user_id)                
+                    data.getvero_username = uname
+                    data.getvero_key = gkey
+                    data.save()
+                except Usersettings.DoesNotExist:
+                    data = Usersettings.objects.create(user_id=user_id,getvero_username=uname,getvero_key=gkey)
+                    data.save()
+                
+
+            else:
+                error.append("error form")    
+            context = {
+                    "error": error,                
+                    }
+            return JsonResponse(context)
+
 
 def exportcsv(request, **kwargs):
     username = None
@@ -252,12 +297,17 @@ def exportcsv(request, **kwargs):
         for i in rows:
             writer.writerow([i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8],])
         return response
+    else:
+        return render(request,"403.html",{})
 
 def exportvero(request):
     username = None
     if request.user.is_authenticated():
         username = request.user.username   
-        tname = username+"_contacts"
-        result = my_task.delay(10)
+        user_id = request.user.id
+        result = my_task.delay(username,user_id)
         print(result)
-        return render(request, 'contacts/exportvero.html', context={'task_id': result.task_id})
+        messages.success(request, 'Your information sent to the server http://getvero.com/.')
+        return redirect("contacts:contacts")
+    else:
+        return render(request,"403.html",{})    

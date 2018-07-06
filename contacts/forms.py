@@ -1,7 +1,7 @@
 from django import forms
 
 from django.contrib.auth import get_user_model
-from .models import Contact
+from .models import Contact, Usersettings
 
 User = get_user_model()
 
@@ -74,3 +74,12 @@ class ContactForm(forms.ModelForm):
     def clean_date_of_birth(self):        
         date_of_birth = self.cleaned_data.get("date_of_birth")
         return date_of_birth
+
+class UsersettingsForm(forms.ModelForm):      
+    getvero_key = forms.CharField(max_length=255)
+    getvero_username = forms.CharField(max_length=45)
+
+    class Meta:
+        model = Usersettings
+        fields = ('getvero_key', 'getvero_username')
+

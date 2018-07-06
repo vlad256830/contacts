@@ -1,6 +1,4 @@
-{% extends 'base.html' %} 
-{% load staticfiles %}
-{% block content %}
+{% extends 'base.html' %} {% load staticfiles %} {% block content %}
 
 <div class="row">
     <div class="container">
@@ -8,96 +6,123 @@
         <div class='col-sm-6 col-sm-offset-3 text-center'>
             <h1>User Settings</h1>
             <p>
-                <h3>User name: {{ username }}   </h3>
+                <h3>User name: {{ username }} </h3>
                 <a class="btn btn-primary" data-toggle="modal" href="#pass-id">Change password</a>
             </p>
         </div>
     </div>
 </div>
-        <hr>
+<hr>
 
-        <div class="row">
-            <div class="container">
-                
-                <div class="modal fade" id="pass-id" role="dialog">
-                    <div class="modal-dialog">
+<div class="row">
+    <div class="container">
 
-                        <form method="post" id="form-changepassword" action="#">
-                            {% csrf_token %}
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                    <h4 class="modal-title">Add Contact</h4>
+        <div class="modal fade" id="pass-id" role="dialog">
+            <div class="modal-dialog">
 
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <label for="id_oldpassword">Old password</label>
-                                        <input type="password" class="form-control" name="oldpassword1" required id="oldpassword" />
-                                    </div>
-                                   
-                                    <div class="form-group">
-                                        <label for="id_password1">Password</label>
-                                        <input type="password" class="form-control" name="password1" required id="password1" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_password2">Password confirmation</label>
-                                        <input type="password" class="form-control" name="password2" required id="id_password2" />
-                                    </div>
+                <form method="post" id="form-changepassword" action="#">
+                    {% csrf_token %}
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title">Add Contact</h4>
 
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal" id="bntclose">Close</button>
-                                    <button type="submit" class="btn btn-primary" id=btnChange>Change password</button>
-                                </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="id_oldpassword">Old password</label>
+                                <input type="password" class="form-control" name="oldpassword1" required id="oldpassword" />
                             </div>
-                        </form>
 
+                            <div class="form-group">
+                                <label for="id_password1">Password</label>
+                                <input type="password" class="form-control" name="password1" required id="password1" />
+                            </div>
+                            <div class="form-group">
+                                <label for="id_password2">Password confirmation</label>
+                                <input type="password" class="form-control" name="password2" required id="id_password2" />
+                            </div>
 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" id="bntclose">Close</button>
+                            <button type="submit" class="btn btn-primary" id=btnChange>Change password</button>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="row">
-            <div class="container">
-                <div class="col-sm-2">
-                    <a class="btn btn-primary" data-toggle="modal" href="#">Add Getvero account</a>
-                </div>
-                <div class="col-sm-8">
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-center">Username</th>
-                                <th class="text-center">API key</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        {% for line in data %}
-                        <tbody>
-                            <tr>
-                                <td class="text-center">{{ line.getvero_username }}</td>
-                                <td class="text-center">{{ line.getvero_key }}</td>
-                                <td class="text-center">
-                                    <a href="#" class="btn btn-sm btn-info">Edit</a>
-                                    <a href="#" class="btn btn-sm btn-danger">Delete</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                        {% endfor %}
-                    </table>
-                </div>
+                </form>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="container">
+        <div class="modal fade" id="vero-id" role="dialog">
+            <div class="modal-dialog">
+                <form method="post" id="form-vero" action="#">
+                    {% csrf_token %}
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title">Add/Edit Getvero key</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="getvero_username">Getvero username</label>
+                                <input type="text" class="form-control" name="getvero_username" required id="id_getvero_username" />
+                            </div>
+                            <div class="form-group">
+                                <label for="getvero_key">Getvero key</label>
+                                <input type="text" class="form-control" name="getvero_key" required id="id_getvero_key" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" id="bntcloseVero">Close</button>
+                            <button type="submit" class="btn btn-primary" id=btnChangeVero>Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="container">
+        <div class="col-sm-2">
+            <a class="btn btn-primary" data-toggle="modal" href="#">Add Getvero account</a>
+        </div>
+        <div class="col-sm-8">
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th class="text-center">Username</th>
+                        <th class="text-center">API key</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td class="text-center">{{ data.getvero_username }}</td>
+                        <td class="text-center">{{ data.getvero_key }}</td>
+                        <td class="text-center">
+                            <a href="#vero-id" data-toggle="modal" class="btn btn-sm btn-info">Edit</a>
+                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
 
 
 
 
 
 
-{% endblock %}
-
-{% block javascript %}
-  <script src="{% static 'js/mysettings.js' %}"></script>
+{% endblock %} {% block javascript %}
+<script src="{% static 'js/mysettings.js' %}"></script>
 {% endblock %}
