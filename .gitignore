@@ -3,14 +3,11 @@
 
 .venv
 
-
 src/settings.py
 src/settings_local.py
 
-
 .DS_STORE
 *.sublime-project
-
 
 # Virtualenv related
 bin/
@@ -35,7 +32,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -109,10 +105,6 @@ celerybeat-schedule
 env/
 venv/
 ENV/
-
-# Spyder project settings
-.spyderproject
-.spyproject
 
 # Rope project settings
 .ropeproject

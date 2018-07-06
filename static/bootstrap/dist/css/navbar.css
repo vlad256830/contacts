@@ -1,0 +1,26 @@
+/* Show it is fixed to the top */
+/*body {
+  min-height: 75rem;
+  padding-top: 4.5rem;
+}*/
+.navbar {
+  background-color: #2b36b6;
+}
+.navbar-inverse .navbar-nav>.active>a{
+  color: #fff;
+  background: #555ca7;
+}
+.navbar-inverse .navbar-rigth>.active>a{
+  color: #fff;
+  background: #555ca7;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav> li > a:focus {
+  background: rgb(32, 151, 16);
+  color: #fff;
+}
+
+.navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active > a:focus {
+  background: rgb(32, 151, 16);
+  color: #fff;
+}
