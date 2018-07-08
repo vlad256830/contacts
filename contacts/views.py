@@ -1,3 +1,7 @@
+import datetime
+import os
+import io
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model, authenticate, login, logout, update_session_auth_hash
 from django.db import models, connection, transaction
@@ -9,13 +13,11 @@ from django.http import HttpResponse,HttpResponseForbidden
 from django.template import RequestContext
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-import datetime
-import os
-import csv
-import io
+from celery.result import AsyncResult
+from django.http import HttpResponse
 from .models import Usersettings
 from .forms import RegisterForm,ContactForm,UsersettingsForm
-from .tasks import create_user_table,export_to_getvero
+from .tasks import create_user_table,export_to_getvero,insert_csv_to_table
 
 
 User = get_user_model()
@@ -24,6 +26,8 @@ User = get_user_model()
 # Create your views here.
 
 def index(request):
+    print(settings.MEDIA_ROOT)
+    #print(os.path)
     context = {
         'form' : RegisterForm,
     }
@@ -171,8 +175,7 @@ def contact_delete(request):
                 "error": [],
                 "res": True,
             }
-            return JsonResponse(context)
-        
+            return JsonResponse(context)      
 
 
 def addcontact(request): 
@@ -201,49 +204,46 @@ def addcontact(request):
                 context = {
                         "error": [],
                         "res": True,
-                }
-            
+                }            
                 return JsonResponse(context)
 
-def insert_csv_to_table(username,filename):
-    tname = username+"_contacts"
-    fname = '/home/a/www2/'+FileSystemStorage().url(filename)
-    created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+# def insert_csv_to_table(username,fname, count):
+#     tname = username+"_contacts"
+#     created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+#     try:
+#         with open(fname, "r", encoding="utf8") as f:
+#             content = f.readlines()        
+#             x = 0
+#             base_sql = "INSERT INTO `"+tname+"` (`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
+#             values_sql = ''
+#             sql = ''
 
-    try:
-        with open(fname, "r", encoding="utf8") as f:
-            content = f.readlines()        
-            #content = content.strip()
-            x = 0
-            base_sql = "(`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
-            values_sql = ''
-            sql = ''
+#             for line in content:         
+#                 if not line.startswith("first"):
+#                     line = line.replace("\n","").replace("\r","")
+#                     print(line)
+#                     s = line.split(",")
+#                     if values_sql:
+#                         values_sql += ",('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+#                     else:
+#                         values_sql += "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
 
-            for line in content:         
-                if not line.startswith("first"):
-                    line = line.replace("\n","").replace("\r","")
-                    s = line.split("\t")
-                    if values_sql:
-                        values_sql += ",('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
-                    else:
-                        values_sql += "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+#                     x = x+1
+#                     if x == 1000:
+#                         sql = base_sql+values_sql
+#                         #print(sql)
+#                         cursor = connection.cursor()
+#                         cursor.execute(sql)
+#                         x = 0
+#                         values_sql = ''
 
-                    x = x+1
-                    if x == 1000:
-                        sql = base_sql+values_sql
-                        #print(sql)
-                        cursor = connection.cursor()
-                        cursor.execute(sql)
-                        x = 0
-                        values_sql = ''
-
-            sql = base_sql+values_sql
-            #print(sql)
-            cursor = connection.cursor()
-            cursor.execute(sql)
-        return True
-    except: 
-        return False
+#             sql = base_sql+values_sql
+#             print(sql)
+#             cursor = connection.cursor()
+#             cursor.execute(sql)
+#         return True
+#     except: 
+#         return False
 
 def importcsv(request):
     context = {}
@@ -262,18 +262,31 @@ def importcsv(request):
             uploaded_file_url = fs.url(filename)
             context = {
                 'uploaded_file_url': uploaded_file_url,
-            }  
-            if not insert_csv_to_table(username,filename):
-                context = {
-                'uploaded_file_url': 'error, file not txt',
-                }
-                #return      
-
-
-            print(settings.MEDIA_ROOT)
-            print(os.path)
-            os.remove('/home/a/www2/'+FileSystemStorage().url(filename))
+            } 
+            #print(settings.MEDIA_ROOT) 
+            fname = settings.MEDIA_ROOT+'/'+filename
+            count = 0
+            with open(fname, "r", encoding="utf8") as f:
+                content = f.readlines()
+                for line in content:
+                    count += 1
+            #print(count)
+            task = insert_csv_to_table.delay(username,fname, count)
+            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+              
         return redirect('contacts:contacts')
+
+def get_task_info(request):
+    task_id = request.GET.get('task_id', None)
+    if task_id is not None:
+        task = AsyncResult(task_id)
+        data = {
+            'state': task.state,
+            'result': task.result,
+        }
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    else:
+        return HttpResponse('No job id given.')
 
 def mysettings(request):
     username = None

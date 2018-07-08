@@ -11,17 +11,29 @@
       {% for message in messages %}
       <p>{{ message }}</p>
       {% endfor %}
-    </div>    
+    </div>
   </div>
   {% endif %}
 </div>
 <div class="row">
   <div class="container">
-    <a class="btn btn-primary" data-toggle="modal" href="#modalid">Add Contact</a>
-    <a class="btn btn-primary" data-toggle="modal" href="#modalimportcsvid">Import from csv</a>
-    <a class="btn btn-primary" href="{% url 'contacts:exportcsv' %}">Export to csv</a>
-    <a class="btn btn-primary" href="{% url 'contacts:exportvero' %}">Export to Getvero</a>
+    <div class="col-sm-12">
+      <div class="col-sm-2">
+        <a class="btn btn-default" data-toggle="modal" href="#modalid">Add Contact</a>
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-default" data-toggle="modal" href="#modalimportcsvid">Import from csv</a>
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-default" href="{% url 'contacts:exportcsv' %}">Export to csv</a>
+      </div>
+      <div class="col-sm-2">
 
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-default" href="{% url 'contacts:exportvero' %}">Export to Getvero</a>
+      </div>
+    </div>
 
     <div class="modal fade" id="modalid" role="dialog">
       <div class="modal-dialog">
@@ -77,7 +89,7 @@
 
 <div class="modal fade" id="modalimportcsvid" role="dialog">
   <div class="modal-dialog">
-    <form method="post" id="form-import-csv" action="{% url 'contacts:importcsv' %}">
+    <form method="post" id="form-import-csv" enctype="multipart/form-data" action="{% url 'contacts:importcsv' %}">
       {% csrf_token %}
       <div class="modal-content">
         <div class="modal-header">
@@ -85,9 +97,14 @@
           <h4 class="modal-title">Add Contacts</h4>
         </div>
         <div class="form-group panel-info">
-            <div class="panel-heading">
-              <label for="id_example">Example csv file</label>
-            </div>
+          <div class="panel-heading">
+            <label for="id_example">Example csv file</label>
+          </div>
+          <div>
+            
+            <progress id="progress-bar" value="0" max="100" style="display:none; margin-bottom: 1em;"></progress>
+            <label id="labelinfo"></label>
+          </div>
           <div class="panel-body">
             <p>first_name,second_name,town,country,telephone,email,date_of_birth</p>
             <p>Jon,Ivanov,Kiev,USA,123412341234,jon@gmail.com,1987-09-21</p>
@@ -97,7 +114,7 @@
           <div class="form-group">
             <label for="id_adres_file">Select File</label>
             <input type="file" class="form-control-file form-control" name="mycsvfile">
-          </div>          
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" id="bntcloseimportcsv">Close</button>
@@ -156,5 +173,4 @@
 
 {% endblock %} {% block javascript %}
 <script src="{% static 'dataTable/datatables.min.js' %}"></script>
-<script src="{% static 'js/contacts.js' %}"></script>
-{% endblock %}
+<script src="{% static 'js/contacts.js' %}"></script> {% endblock %}

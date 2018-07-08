@@ -1,11 +1,15 @@
 import string
+import os
+import io
+import datetime
 from django.contrib.auth.models import User
-from django.utils.crypto import get_random_string
+#from django.utils.crypto import get_random_string
 from django.db import models, connection, transaction
 from django.http import HttpResponse
+from celery import shared_task,current_task
+
 from vero import VeroEventLogger
 
-from celery import shared_task
 from .models import Usersettings
 
 
@@ -54,8 +58,52 @@ def create_user_table(username):
     cursor = connection.cursor()
     cursor.execute(sql) 
     return 'table create'
-    
 
+@shared_task   
+def insert_csv_to_table(username,fname, count):
+    tname = username+"_contacts"
+    created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+    try:
+        with open(fname, "r", encoding="utf8") as f:
+            content = f.readlines()        
+            x = 0
+            i = 0
+            base_sql = "INSERT INTO `"+tname+"` (`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
+            values_sql = ''
+            sql = ''
+            for line in content:         
+                if not line.startswith("first"):
+                    line = line.replace("\n","").replace("\r","")
+                    print(line)
+                    s = line.split(",")
+                    if values_sql:
+                        values_sql += ",('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+                    else:
+                        values_sql += "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+                    i += 1
+                    x += 1
+                    if x == 1000:                        
+                        sql = base_sql+values_sql
+                        cursor = connection.cursor()
+                        cursor.execute(sql)
+                        x = 0
+                        values_sql = ''
+                        current_task.update_state(state='PROGRESS', 
+                                        meta={'current': i, 'total': count,
+                                        'percent': int((float(i) / count) * 100)})
+
+
+            sql = base_sql+values_sql
+            cursor = connection.cursor()
+            cursor.execute(sql)
+            current_task.update_state(state='PROGRESS', 
+                                        meta={'current': i, 'total': count,
+                                        'percent': int((float(i) / count) * 100)})
+        
+        os.remove(fname)
+        return {'current': count, 'total': count, 'percent': 100}
+    except: 
+        return {'current': 0, 'total': count, 'percent': 0}
 
 
 
