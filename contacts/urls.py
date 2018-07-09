@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^logout/$', logout_user, name='logout'),
     url(r'^contacts/mycontacts/$', mycontacts, name='mycontacts'),
     url(r'^delete/$', contact_delete, name='delete'),
+    url(r'^basicupload/$', basicupload, name='basicupload'),
     url(r'^contacts/addcontact/$', addcontact, name='addcontact'),
     url(r'^contacts/importcsv/$', importcsv, name='importcsv'),
     url(r'^contacts/get-task-info/$', get_task_info, name='get-task-info'),

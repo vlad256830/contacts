@@ -245,6 +245,18 @@ def addcontact(request):
 #     except: 
 #         return False
 
+
+def basicupload(request):
+    if request.method == 'POST' and request.FILES['csvfile']:
+        mycsvfile = request.FILES['csvfile']
+        fs = FileSystemStorage()
+        filename = fs.save(mycsvfile.name, mycsvfile)
+        uploaded_file_url = fs.url(filename)
+
+        data = {'is_valid': True, 'name': filename, 'url': uploaded_file_url}
+        
+        return JsonResponse(data)
+
 def importcsv(request):
     context = {}
     username = None

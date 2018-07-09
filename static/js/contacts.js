@@ -160,10 +160,10 @@ $(document).ready(function () {
     $('#form-import-csv').submit(function (e) {
         e.preventDefault();
         var uploadfrm = $('#form-import-csv');
-        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+
         var fdata = new FormData(uploadfrm).get(0);
         
-        fdata.append('csrfmiddlewaretoken', csrftoken);
+
         console.log(fdata);
 
         $.ajax({

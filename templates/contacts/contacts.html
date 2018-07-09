@@ -89,7 +89,7 @@
 
 <div class="modal fade" id="modalimportcsvid" role="dialog">
   <div class="modal-dialog">
-    <form method="post" id="form-import-csv" enctype="multipart/form-data" action="{% url 'contacts:importcsv' %}">
+   <form method="post" id="form-import" enctype="multipart/form-data" action="#">
       {% csrf_token %}
       <div class="modal-content">
         <div class="modal-header">
@@ -100,8 +100,7 @@
           <div class="panel-heading">
             <label for="id_example">Example csv file</label>
           </div>
-          <div>
-            
+          <div>            
             <progress id="progress-bar" value="0" max="100" style="display:none; margin-bottom: 1em;"></progress>
             <label id="labelinfo"></label>
           </div>
@@ -111,14 +110,23 @@
           </div>
         </div>
         <div class="modal-body">
+            
           <div class="form-group">
-            <label for="id_adres_file">Select File</label>
-            <input type="file" class="form-control-file form-control" name="mycsvfile">
+            <label for="id_adres_file">Select and upload csv file</label>
+            <button type="button" class="btn btn-primary js-upload-file">
+              <span class="glyphicon glyphicon-cloud-upload"></span> Upload file
+            </button>
+            <input type="file" style="display: none;" id="fileupload" name="csvfile"
+                data-url="{% url 'contacts:basicupload' %}"
+                data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" id="bntcloseimportcsv">Close</button>
-          <button type="submit" class="btn btn-primary" id=btnImportCSV>Import</button>
+
+         
+             
+
         </div>
       </div>
     </form>
@@ -173,4 +181,9 @@
 
 {% endblock %} {% block javascript %}
 <script src="{% static 'dataTable/datatables.min.js' %}"></script>
-<script src="{% static 'js/contacts.js' %}"></script> {% endblock %}
+<script src="{% static 'jquery/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
+<script src="{% static 'jquery/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
+<script src="{% static 'jquery/jquery-file-upload/jquery.fileupload.js' %}"></script>
+<script src="{% static 'js/contacts.js' %}"></script> 
+<script src="{% static 'js/basic-upload.js' %}"></script>
+{% endblock %}
