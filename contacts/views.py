@@ -262,8 +262,8 @@ def importcsv(request):
     username = None
     if request.user.is_authenticated():
         username = request.user.username
-        if request.method == 'POST' and request.FILES['mycsvfile']:
-            mycsvfile = request.FILES['mycsvfile']
+        if request.method == 'POST' and request.FILES['csvfile']:
+            mycsvfile = request.FILES['csvfile']
             if not mycsvfile.name.endswith('.csv'):
                 context = {
                 'uploaded_file_url': 'error, file not csv',
@@ -284,9 +284,11 @@ def importcsv(request):
                     count += 1
             #print(count)
             task = insert_csv_to_table.delay(username,fname, count)
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-              
-        return redirect('contacts:contacts')
+            data = {'task_id': task.id}
+            #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+            return JsonResponse(data)
+        else:
+            return redirect('contacts:contacts')
 
 def get_task_info(request):
     task_id = request.GET.get('task_id', None)
