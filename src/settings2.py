@@ -13,15 +13,14 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '56)p52lq0-ot$7*es16ydz8gx0kvh59t)w63drzpjd&75m3wgh'
+SECRET_KEY = '56)p52lq0-ot$7*es16ydz8gx0kvh59t)w63drzpjijrs4kg5g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'django_adminlte',
     'django_adminlte_theme',
+    'celery_progress',
     'django_celery_results',
 
     'django.contrib.admin',
@@ -54,7 +54,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 ]
 
 ROOT_URLCONF = 'src.urls'
@@ -139,8 +138,6 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
     
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR,  "static"),
-    #os.path.join(BASE_DIR, "static_in_env"),
-    #'/var/www/static/'
 )
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -148,4 +145,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CELERY_BROKER_URL = 'amqp://localhost'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_BACKEND = 'django-cache'
-
