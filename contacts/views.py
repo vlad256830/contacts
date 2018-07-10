@@ -15,9 +15,10 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from celery.result import AsyncResult
 from django.http import HttpResponse
+
 from .models import Usersettings
 from .forms import RegisterForm,ContactForm,UsersettingsForm
-from .tasks import create_user_table,export_to_getvero,insert_csv_to_table
+from .tasks import create_user_table,export_to_getvero,insert_csv_to_table,import_from_getvero
 
 
 User = get_user_model()
@@ -282,25 +283,76 @@ def importcsv(request):
                 content = f.readlines()
                 for line in content:
                     count += 1
+
+            #print(fname)
+            #print(username)
             #print(count)
             task = insert_csv_to_table.delay(username,fname, count)
             data = {'task_id': task.id}
-            #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+            #data = insert_csv_to_table(username,fname, count)
+            #return HttpResponse(simplejson.dumps({'task_id': task.id}), , mimetype='application/json')
             return JsonResponse(data)
         else:
             return redirect('contacts:contacts')
 
+# def insert_csv_to_table(username,fname, count):
+#     tname = username+"_contacts"
+#     created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+#     try:
+#         with open(fname, "r", encoding="utf8") as f:
+#             content = f.readlines()        
+#             x = 0
+#             i = 0
+#             base_sql = "INSERT INTO `"+tname+"` (`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
+#             values_sql = ''
+#             sql = ''
+#             for line in content:         
+#                 if not line.startswith("first"):
+#                     line = line.replace("\n","").replace("\r","")
+#                     #print(line)
+#                     s = line.split(",")
+#                     if values_sql:
+#                         values_sql += ",('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+#                     else:
+#                         values_sql += "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+#                     i += 1
+#                     x += 1
+#                     if x == 1000:                        
+#                         sql = base_sql+values_sql
+#                         cursor = connection.cursor()
+#                         cursor.execute(sql)
+#                         x = 0
+#                         values_sql = ''
+
+
+
+#             sql = base_sql+values_sql
+#             print(sql)
+#             cursor = connection.cursor()
+#             cursor.execute(sql)
+
+        
+#         os.remove(fname)
+#         return {'current': count, 'total': count, 'percent': 100}
+#     except: 
+#         return {'current': 0, 'total': count, 'percent': 0}
+
 def get_task_info(request):
     task_id = request.GET.get('task_id', None)
+    print(task_id)
     if task_id is not None:
         task = AsyncResult(task_id)
         data = {
             'state': task.state,
             'result': task.result,
         }
-        return HttpResponse(json.dumps(data), content_type='application/json')
+        print(task.state)
+        print(task.result)
+        #return HttpResponse(json.dumps(data), content_type='application/json')
+        return JsonResponse(data)
     else:
-        return HttpResponse('No job id given.')
+        #return HttpResponse('No job id given.')
+        return JsonResponse('No job id given.')
 
 def mysettings(request):
     username = None
@@ -436,4 +488,17 @@ def exportvero(request):
         messages.success(request, 'Your information sent to the server http://getvero.com/.')
         return redirect("contacts:contacts")
     else:
-        return render(request,"403.html",{})    
+        return render(request,"403.html",{})  
+
+def importvero(request):
+    username = None
+    if request.user.is_authenticated():
+        username = request.user.username   
+        user_id = request.user.id
+        result = import_from_getvero.delay(username,user_id)
+        print(result)
+        messages.success(request, 'Your information load from the server http://getvero.com/.')
+        return redirect("contacts:contacts")
+    else:
+        return render(request,"403.html",{})  
+

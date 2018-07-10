@@ -28,7 +28,7 @@
         <a class="btn btn-default" href="{% url 'contacts:exportcsv' %}">Export to csv</a>
       </div>
       <div class="col-sm-2">
-
+        <a class="btn btn-default" href="{% url 'contacts:importvero' %}">Import from Getvero</a>
       </div>
       <div class="col-sm-2">
         <a class="btn btn-default" href="{% url 'contacts:exportvero' %}">Export to Getvero</a>
@@ -123,10 +123,6 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal" id="bntcloseimportcsv">Close</button>
-
-         
-             
-
         </div>
       </div>
     </form>

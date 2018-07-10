@@ -2,6 +2,7 @@ import string
 import os
 import io
 import datetime
+import requests
 from django.contrib.auth.models import User
 #from django.utils.crypto import get_random_string
 from django.db import models, connection, transaction
@@ -98,12 +99,21 @@ def insert_csv_to_table(username,fname, count):
             cursor.execute(sql)
             current_task.update_state(state='PROGRESS', 
                                         meta={'current': i, 'total': count,
-                                        'percent': int((float(i) / count) * 100)})
+                                        'percent': 100})
         
         os.remove(fname)
         return {'current': count, 'total': count, 'percent': 100}
     except: 
         return {'current': 0, 'total': count, 'percent': 0}
+
+@shared_task 
+def import_from_getvero(username,user_id):
+    r = requests.get('https://api.github.com', auth=('username', 'pass'))
+
+    print(r.status_code)
+    print(r.headers['content-type'])
+    
+    return 'data import'
 
 
 
