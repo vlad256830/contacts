@@ -100,10 +100,7 @@
           <div class="panel-heading">
             <label for="id_example">Example csv file</label>
           </div>
-          <div>            
-            <progress id="progress-bar" value="0" max="100" style="display:none; margin-bottom: 1em;"></progress>
-            <label id="labelinfo"></label>
-          </div>
+          
           <div class="panel-body">
             <p>first_name,second_name,town,country,telephone,email,date_of_birth</p>
             <p>Jon,Ivanov,Kiev,USA,123412341234,jon@gmail.com,1987-09-21</p>
@@ -119,6 +116,10 @@
             <input type="file" style="display: none;" id="fileupload" name="csvfile"
                 data-url="{% url 'contacts:basicupload' %}"
                 data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+          </div>
+          <div class="form-group">            
+            <progress id="progress-bar" value="0" max="100" style="display:none; margin-bottom: 1em;"></progress>
+            <label id="labelinfo"></label>
           </div>
         </div>
         <div class="modal-footer">

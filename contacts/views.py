@@ -14,6 +14,7 @@ from django.template import RequestContext
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from celery.result import AsyncResult
+from celery.states import state, PENDING, SUCCESS
 from django.http import HttpResponse
 
 from .models import Usersettings

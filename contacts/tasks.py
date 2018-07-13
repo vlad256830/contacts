@@ -2,12 +2,14 @@ import string
 import os
 import io
 import datetime
+import time
 import requests
 from django.contrib.auth.models import User
 #from django.utils.crypto import get_random_string
 from django.db import models, connection, transaction
 from django.http import HttpResponse
 from celery import shared_task,current_task
+from celery.states import state, PENDING, SUCCESS
 
 from vero import VeroEventLogger
 
@@ -62,6 +64,43 @@ def create_user_table(username):
 
 @shared_task   
 def insert_csv_to_table(username,fname, count):
+    tname = username+"_contacts"
+    created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
+    try:
+        with open(fname, "r", encoding="utf8") as f:
+            content = f.readlines()        
+
+            i = 0
+            base_sql = "INSERT INTO `"+tname+"` (`first_name`,`second_name`,`town`,`country`,`telephone`,`email`,`date_of_birth`,`created_at`)VALUES"
+
+            sql = ''
+            for line in content:         
+                if not line.startswith("first"):
+                    line = line.replace("\n","").replace("\r","")
+                    print(line)
+                    s = line.split(",")
+                    sql = base_sql + "('"+s[0]+"','"+s[1]+"','"+s[2]+"','"+s[3]+"','"+s[4]+"','"+s[5]+"','"+s[6]+"','"+created_at+"')"
+                    i += 1
+                    cursor = connection.cursor()
+                    cursor.execute(sql)
+                    current_task.update_state(state='PROGRESS', 
+                                        meta={'current': i, 'total': count,
+                                        'percent': int((float(i) / count) * 100)})
+                    #time.sleep(5)
+
+
+            
+            current_task.update_state(state='PROGRESS', 
+                                        meta={'current': i, 'total': count,
+                                        'percent': 100})
+        
+        os.remove(fname)
+        return {'current': count, 'total': count, 'percent': 100}
+    except: 
+        return {'current': 0, 'total': count, 'percent': 0}
+
+@shared_task   
+def insert_csv_to_table2(username,fname, count):
     tname = username+"_contacts"
     created_at = '{:%Y-%m-%d}'.format(datetime.date.today())
     try:

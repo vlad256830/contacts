@@ -29,9 +29,10 @@ $(function () {
             url: '/get-task-info/',
             data: { 'task_id': task_id },
             success: function (data) {
-                //linfo.html('');
-                //console.log(data.state);
-                if (data.result) {
+                linfo.html('');
+                console.log(data.state);
+                console.log(data.result);
+                
                     if (data.state == 'PENDING') {
                         linfo.html('Please wait...');
                     }
@@ -42,15 +43,17 @@ $(function () {
                     }
                     if (data.state == 'SUCCESS') {
                         linfo.html('All contacts created, create ' + data.result.current + ' out of ' + data.result.total);
+                        //$("#bntcloseimportcsv").click();
+                        table.ajax.reload();
                     }
                     else {
                         setTimeout(function () {
                             get_task_info(task_id)
                         }, 1000);
                     }
-                }
-                $("#bntcloseimportcsv").click();
-                table.ajax.reload();
+                
+                //$("#bntcloseimportcsv").click();
+                //table.ajax.reload();
             },
             error: function (data) {
                 frm.html("Something went wrong!");
