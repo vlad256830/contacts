@@ -22,7 +22,7 @@ pylint==1.9.2
 pytz==2018.5
 query-string==1.0.2
 request==1.0.2
-requests==2.19.1
+requests==2.20.0
 six==1.11.0
 urllib3==1.23
 vero==2.0.1
