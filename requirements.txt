@@ -24,7 +24,7 @@ query-string==1.0.2
 request==1.0.2
 requests==2.20.0
 six==1.11.0
-urllib3==1.23
+urllib3==1.24.2
 vero==2.0.1
 vine==1.1.4
 wrapt==1.10.11
